@@ -9,8 +9,6 @@ use Livewire\Component;
 
 new class extends Component
 {
-    public int $productId;
-
     public string $name = '';
     public string $email = '';
     public string $phone = '';
@@ -29,7 +27,7 @@ new class extends Component
             'email' => ['required', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
             'company' => ['nullable', 'string', 'max:255'],
-            'message' => ['nullable', 'string', 'max:2000'],
+            'message' => ['required', 'string', 'max:2000'],
         ];
     }
 
@@ -54,20 +52,20 @@ new class extends Component
         RateLimiter::hit($throttleKey, 600);
 
         $enquiry = Enquiry::create([
-            'product_id' => $this->productId,
-            'type' => 'quote',
+            'product_id' => null,
+            'type' => 'general',
             'name' => $this->name,
             'email' => $this->email,
             'phone' => $this->phone,
             'company' => $this->company,
             'message' => $this->message,
             'status' => 'new',
-            'source' => 'product_detail',
+            'source' => 'contact_page',
             'ip_address' => request()->ip(),
         ]);
 
         if ($adminEmail = Setting::get('contact_email')) {
-            Mail::to($adminEmail)->send(new EnquiryReceived($enquiry->load('product')));
+            Mail::to($adminEmail)->send(new EnquiryReceived($enquiry));
         }
 
         $this->reset(['name', 'email', 'phone', 'company', 'message']);
@@ -78,43 +76,45 @@ new class extends Component
 
 <div>
     @if ($submitted)
-        <div class="alert alert-success">Thank you — your enquiry has been received. We'll get back to you shortly.</div>
+        <div class="alert alert-success">Thank you — your message has been received. We'll get back to you shortly.</div>
     @else
         <form wire:submit="submit">
             <input type="text" wire:model="website" class="d-none" tabindex="-1" autocomplete="off">
 
-            <div class="mb-3">
-                <label class="form-label">Name</label>
-                <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model="name">
-                @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            <div class="row">
+                <div class="col-sm-6 mb-3">
+                    <label class="form-label">Name</label>
+                    <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model="name">
+                    @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+                <div class="col-sm-6 mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control @error('email') is-invalid @enderror" wire:model="email">
+                    @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
             </div>
 
-            <div class="mb-3">
-                <label class="form-label">Email</label>
-                <input type="email" class="form-control @error('email') is-invalid @enderror" wire:model="email">
-                @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Phone</label>
-                <input type="text" class="form-control @error('phone') is-invalid @enderror" wire:model="phone">
-                @error('phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Company</label>
-                <input type="text" class="form-control @error('company') is-invalid @enderror" wire:model="company">
-                @error('company') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            <div class="row">
+                <div class="col-sm-6 mb-3">
+                    <label class="form-label">Phone</label>
+                    <input type="text" class="form-control @error('phone') is-invalid @enderror" wire:model="phone">
+                    @error('phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+                <div class="col-sm-6 mb-3">
+                    <label class="form-label">Company</label>
+                    <input type="text" class="form-control @error('company') is-invalid @enderror" wire:model="company">
+                    @error('company') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Message</label>
-                <textarea class="form-control @error('message') is-invalid @enderror" wire:model="message" rows="4"></textarea>
+                <textarea class="form-control @error('message') is-invalid @enderror" wire:model="message" rows="5"></textarea>
                 @error('message') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
 
-            <button type="submit" class="btn btn-primary w-100" wire:loading.attr="disabled">
-                <span wire:loading.remove>Request Quote</span>
+            <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
+                <span wire:loading.remove>Send Message</span>
                 <span wire:loading>Sending…</span>
             </button>
         </form>

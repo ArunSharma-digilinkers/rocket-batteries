@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\EnquiryController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\SeriesController;
 use Illuminate\Support\Facades\Route;
@@ -27,5 +28,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('products', ProductController::class)->except(['show', 'store', 'update']);
 
         Route::post('series/{series}/attributes', [SeriesController::class, 'syncAttributes'])->name('series.attributes.sync');
+
+        Route::resource('enquiries', EnquiryController::class)->only(['index', 'show', 'update', 'destroy']);
     });
 });

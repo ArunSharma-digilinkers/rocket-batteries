@@ -38,5 +38,20 @@
                 </a>
             </li>
         </ul>
+
+        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-white-50 text-uppercase small">
+            Leads
+        </h6>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link text-white {{ request()->routeIs('admin.enquiries.*') ? 'active' : '' }}" href="{{ route('admin.enquiries.index') }}">
+                    Enquiries
+                    @php $newCount = \App\Models\Enquiry::where('status', 'new')->count(); @endphp
+                    @if ($newCount)
+                        <span class="badge bg-warning text-dark">{{ $newCount }}</span>
+                    @endif
+                </a>
+            </li>
+        </ul>
     </div>
 </nav>
