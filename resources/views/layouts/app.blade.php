@@ -11,6 +11,7 @@
     </main>
 
     @include('layouts.partials.footer')
+    @include('layouts.partials.whatsapp')
     @include('layouts.partials.scripts')
 </body>
 </html>

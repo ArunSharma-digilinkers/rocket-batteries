@@ -68,4 +68,9 @@ class Product extends Model
     {
         return $this->hasMany(Warranty::class);
     }
+
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
 }

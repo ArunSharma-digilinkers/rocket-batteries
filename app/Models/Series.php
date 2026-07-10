@@ -49,4 +49,9 @@ class Series extends Model
             ->withPivot(['is_required', 'sort_order'])
             ->orderByPivot('sort_order');
     }
+
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
 }
