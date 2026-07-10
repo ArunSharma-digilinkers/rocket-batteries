@@ -44,7 +44,8 @@ class AttributeController extends Controller
     public function update(UpdateAttributeRequest $request, Attribute $attribute): RedirectResponse
     {
         $data = $request->validated();
-        $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
+        // Leaving slug blank keeps the existing one — renaming shouldn't silently break references to it.
+        $data['slug'] = ($data['slug'] ?? null) ?: $attribute->slug;
         $data['is_filterable'] = $request->boolean('is_filterable');
         $data['options'] = $this->parseOptions($data['options'] ?? null);
 

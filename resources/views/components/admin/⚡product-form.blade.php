@@ -246,8 +246,8 @@ new class extends Component
                     <div class="card-body">
                         <div class="row">
                             <div class="col-sm-6 mb-3">
-                                <label class="form-label">Series</label>
-                                <select class="form-select @error('seriesId') is-invalid @enderror" wire:model.live="seriesId">
+                                <label for="product-series" class="form-label">Series</label>
+                                <select id="product-series" class="form-select @error('seriesId') is-invalid @enderror" wire:model.live="seriesId">
                                     <option value="">Select a series</option>
                                     @foreach ($this->allSeries as $series)
                                         <option value="{{ $series->id }}">{{ $series->category->name }} — {{ $series->name }}</option>
@@ -256,38 +256,38 @@ new class extends Component
                                 @error('seriesId') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                             <div class="col-sm-6 mb-3">
-                                <label class="form-label">Nominal Voltage</label>
-                                <input type="text" class="form-control" wire:model="nominalVoltage" placeholder="e.g. 12V">
+                                <label for="product-voltage" class="form-label">Nominal Voltage</label>
+                                <input type="text" id="product-voltage" class="form-control" wire:model="nominalVoltage" placeholder="e.g. 12V">
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-sm-6 mb-3">
-                                <label class="form-label">SKU</label>
-                                <input type="text" class="form-control @error('sku') is-invalid @enderror" wire:model="sku">
+                                <label for="product-sku" class="form-label">SKU</label>
+                                <input type="text" id="product-sku" class="form-control @error('sku') is-invalid @enderror" wire:model="sku">
                                 @error('sku') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                             <div class="col-sm-6 mb-3">
-                                <label class="form-label">Name</label>
-                                <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model="name">
+                                <label for="product-name" class="form-label">Name</label>
+                                <input type="text" id="product-name" class="form-control @error('name') is-invalid @enderror" wire:model="name">
                                 @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Slug <span class="text-muted small">(auto-generated if left blank)</span></label>
-                            <input type="text" class="form-control @error('slug') is-invalid @enderror" wire:model="slug">
+                            <label for="product-slug" class="form-label">Slug <span class="text-muted small">(auto-generated if left blank)</span></label>
+                            <input type="text" id="product-slug" class="form-control @error('slug') is-invalid @enderror" wire:model="slug">
                             @error('slug') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Short Description</label>
-                            <textarea class="form-control" wire:model="shortDescription" rows="2"></textarea>
+                            <label for="product-short-description" class="form-label">Short Description</label>
+                            <textarea id="product-short-description" class="form-control" wire:model="shortDescription" rows="2"></textarea>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Long Description</label>
-                            <textarea class="form-control" wire:model="longDescription" rows="6"></textarea>
+                            <label for="product-long-description" class="form-label">Long Description</label>
+                            <textarea id="product-long-description" class="form-control" wire:model="longDescription" rows="6"></textarea>
                         </div>
                     </div>
                 </div>
@@ -298,12 +298,12 @@ new class extends Component
                         <div class="card-body">
                             @forelse ($this->specAttributes as $attribute)
                                 <div class="row mb-3 align-items-center">
-                                    <label class="col-sm-4 col-form-label">
+                                    <label for="product-spec-{{ $attribute->id }}" class="col-sm-4 col-form-label">
                                         {{ $attribute->name }}
                                         @if ($attribute->unit) <span class="text-muted small">({{ $attribute->unit }})</span> @endif
                                     </label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" wire:model="specValues.{{ $attribute->id }}">
+                                        <input type="text" id="product-spec-{{ $attribute->id }}" class="form-control" wire:model="specValues.{{ $attribute->id }}">
                                     </div>
                                 </div>
                             @empty
@@ -318,8 +318,8 @@ new class extends Component
                     <div class="card-body">
                         @foreach ($this->allApplications as $application)
                             <div class="form-check form-check-inline">
-                                <input type="checkbox" class="form-check-input" value="{{ $application->id }}" wire:model="selectedApplications">
-                                <label class="form-check-label">{{ $application->name }}</label>
+                                <input type="checkbox" class="form-check-input" id="product-application-{{ $application->id }}" value="{{ $application->id }}" wire:model="selectedApplications">
+                                <label class="form-check-label" for="product-application-{{ $application->id }}">{{ $application->name }}</label>
                             </div>
                         @endforeach
                     </div>
@@ -329,16 +329,16 @@ new class extends Component
                     <div class="card-header">SEO</div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label class="form-label">Meta Title</label>
-                            <input type="text" class="form-control" wire:model="metaTitle">
+                            <label for="product-meta-title" class="form-label">Meta Title</label>
+                            <input type="text" id="product-meta-title" class="form-control" wire:model="metaTitle">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Meta Description</label>
-                            <textarea class="form-control" wire:model="metaDescription" rows="2"></textarea>
+                            <label for="product-meta-description" class="form-label">Meta Description</label>
+                            <textarea id="product-meta-description" class="form-control" wire:model="metaDescription" rows="2"></textarea>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Meta Keywords</label>
-                            <input type="text" class="form-control" wire:model="metaKeywords">
+                            <label for="product-meta-keywords" class="form-label">Meta Keywords</label>
+                            <input type="text" id="product-meta-keywords" class="form-control" wire:model="metaKeywords">
                         </div>
                     </div>
                 </div>
@@ -349,16 +349,16 @@ new class extends Component
                     <div class="card-header">Publish</div>
                     <div class="card-body">
                         <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" wire:model="status">
-                            <label class="form-check-label">Active</label>
+                            <input type="checkbox" class="form-check-input" id="product-status" wire:model="status">
+                            <label class="form-check-label" for="product-status">Active</label>
                         </div>
                         <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" wire:model="isFeatured">
-                            <label class="form-check-label">Featured</label>
+                            <input type="checkbox" class="form-check-input" id="product-featured" wire:model="isFeatured">
+                            <label class="form-check-label" for="product-featured">Featured</label>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Sort Order</label>
-                            <input type="number" class="form-control" wire:model="sortOrder">
+                            <label for="product-sort-order" class="form-label">Sort Order</label>
+                            <input type="number" id="product-sort-order" class="form-control" wire:model="sortOrder">
                         </div>
                         <button type="submit" class="btn btn-primary w-100" wire:loading.attr="disabled">
                             <span wire:loading.remove>Save Product</span>
@@ -374,7 +374,7 @@ new class extends Component
                         @if ($this->currentProduct?->hero_image)
                             <img src="{{ \Illuminate\Support\Facades\Storage::url($this->currentProduct->hero_image) }}" class="img-fluid mb-2" alt="">
                         @endif
-                        <input type="file" class="form-control @error('heroImage') is-invalid @enderror" wire:model="heroImage" accept="image/*">
+                        <input type="file" class="form-control @error('heroImage') is-invalid @enderror" wire:model="heroImage" accept="image/*" aria-label="Hero image">
                         @error('heroImage') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         @if ($heroImage)
                             <img src="{{ $heroImage->temporaryUrl() }}" class="img-fluid mt-2" alt="">
@@ -388,7 +388,7 @@ new class extends Component
                         @if ($this->currentProduct?->datasheet_path)
                             <a href="{{ \Illuminate\Support\Facades\Storage::url($this->currentProduct->datasheet_path) }}" target="_blank">Current datasheet</a>
                         @endif
-                        <input type="file" class="form-control @error('datasheet') is-invalid @enderror" wire:model="datasheet" accept="application/pdf">
+                        <input type="file" class="form-control @error('datasheet') is-invalid @enderror" wire:model="datasheet" accept="application/pdf" aria-label="Datasheet PDF">
                         @error('datasheet') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                 </div>
@@ -401,12 +401,12 @@ new class extends Component
                                 @foreach ($this->existingMedia as $media)
                                     <div class="col-4 position-relative">
                                         <img src="{{ \Illuminate\Support\Facades\Storage::url($media->path) }}" class="img-fluid rounded" alt="">
-                                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0" wire:click="deleteMedia({{ $media->id }})" wire:confirm="Remove this image?">&times;</button>
+                                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0" wire:click="deleteMedia({{ $media->id }})" wire:confirm="Remove this image?" aria-label="Remove image">&times;</button>
                                     </div>
                                 @endforeach
                             </div>
                         @endif
-                        <input type="file" class="form-control @error('galleryImages.*') is-invalid @enderror" wire:model="galleryImages" multiple accept="image/*">
+                        <input type="file" class="form-control @error('galleryImages.*') is-invalid @enderror" wire:model="galleryImages" multiple accept="image/*" aria-label="Gallery images">
                         @error('galleryImages.*') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                 </div>

@@ -1,9 +1,9 @@
 @php
-    $navCategories = \App\Models\Category::where('status', true)->orderBy('sort_order')->with('series')->get();
+    $navCategories = \App\Models\Category::navigationTree();
 @endphp
 
 <header class="border-bottom">
-    <nav class="navbar navbar-expand-lg container">
+    <nav class="navbar navbar-expand-lg container" aria-label="Main navigation">
         <a class="navbar-brand fw-bold" href="{{ url('/') }}">{{ config('app.name') }}</a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"

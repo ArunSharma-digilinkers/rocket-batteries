@@ -197,7 +197,7 @@ new class extends Component
                     <div class="col-sm-6 col-lg-4">
                         <div class="card h-100">
                             @if ($product->hero_image)
-                                <img src="{{ \Illuminate\Support\Facades\Storage::url($product->hero_image) }}" class="card-img-top" alt="{{ $product->name }}">
+                                <img src="{{ \Illuminate\Support\Facades\Storage::url($product->hero_image) }}" class="card-img-top" alt="{{ $product->name }}" loading="lazy">
                             @endif
                             <div class="card-body d-flex flex-column">
                                 <div class="text-muted small">{{ $product->series->category->name }} — {{ $product->series->name }}</div>

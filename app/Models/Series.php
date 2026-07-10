@@ -54,4 +54,10 @@ class Series extends Model
     {
         return 'slug';
     }
+
+    protected static function booted(): void
+    {
+        static::saved(fn () => Category::forgetNavigationCache());
+        static::deleted(fn () => Category::forgetNavigationCache());
+    }
 }

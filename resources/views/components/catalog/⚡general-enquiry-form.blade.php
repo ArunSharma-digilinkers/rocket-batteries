@@ -79,37 +79,38 @@ new class extends Component
         <div class="alert alert-success">Thank you — your message has been received. We'll get back to you shortly.</div>
     @else
         <form wire:submit="submit">
-            <input type="text" wire:model="website" class="d-none" tabindex="-1" autocomplete="off">
+            <label for="enquiry-website" class="visually-hidden">Leave this field blank</label>
+            <input type="text" id="enquiry-website" wire:model="website" class="d-none" tabindex="-1" autocomplete="off">
 
             <div class="row">
                 <div class="col-sm-6 mb-3">
-                    <label class="form-label">Name</label>
-                    <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model="name">
+                    <label for="enquiry-name" class="form-label">Name</label>
+                    <input type="text" id="enquiry-name" class="form-control @error('name') is-invalid @enderror" wire:model="name">
                     @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 <div class="col-sm-6 mb-3">
-                    <label class="form-label">Email</label>
-                    <input type="email" class="form-control @error('email') is-invalid @enderror" wire:model="email">
+                    <label for="enquiry-email" class="form-label">Email</label>
+                    <input type="email" id="enquiry-email" class="form-control @error('email') is-invalid @enderror" wire:model="email">
                     @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
             </div>
 
             <div class="row">
                 <div class="col-sm-6 mb-3">
-                    <label class="form-label">Phone</label>
-                    <input type="text" class="form-control @error('phone') is-invalid @enderror" wire:model="phone">
+                    <label for="enquiry-phone" class="form-label">Phone</label>
+                    <input type="text" id="enquiry-phone" class="form-control @error('phone') is-invalid @enderror" wire:model="phone">
                     @error('phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 <div class="col-sm-6 mb-3">
-                    <label class="form-label">Company</label>
-                    <input type="text" class="form-control @error('company') is-invalid @enderror" wire:model="company">
+                    <label for="enquiry-company" class="form-label">Company</label>
+                    <input type="text" id="enquiry-company" class="form-control @error('company') is-invalid @enderror" wire:model="company">
                     @error('company') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Message</label>
-                <textarea class="form-control @error('message') is-invalid @enderror" wire:model="message" rows="5"></textarea>
+                <label for="enquiry-message" class="form-label">Message</label>
+                <textarea id="enquiry-message" class="form-control @error('message') is-invalid @enderror" wire:model="message" rows="5"></textarea>
                 @error('message') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
 

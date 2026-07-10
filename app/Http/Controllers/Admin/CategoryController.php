@@ -48,7 +48,8 @@ class CategoryController extends Controller
     public function update(UpdateCategoryRequest $request, Category $category): RedirectResponse
     {
         $data = $request->validated();
-        $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
+        // Leaving slug blank keeps the existing one — renaming shouldn't silently break the URL.
+        $data['slug'] = ($data['slug'] ?? null) ?: $category->slug;
         $data['status'] = $request->boolean('status');
 
         if ($request->hasFile('image')) {

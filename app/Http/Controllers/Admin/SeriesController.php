@@ -55,7 +55,8 @@ class SeriesController extends Controller
     public function update(UpdateSeriesRequest $request, Series $series): RedirectResponse
     {
         $data = $request->validated();
-        $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
+        // Leaving slug blank keeps the existing one — renaming shouldn't silently break the URL.
+        $data['slug'] = ($data['slug'] ?? null) ?: $series->slug;
         $data['status'] = $request->boolean('status');
 
         $series->update($data);

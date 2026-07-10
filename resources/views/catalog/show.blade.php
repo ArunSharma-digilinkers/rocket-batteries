@@ -2,6 +2,26 @@
 
 @section('title', ($product->meta_title ?: $product->name) . ' — ' . config('app.name'))
 @section('meta_description', $product->meta_description ?: $product->short_description)
+@if ($product->hero_image)
+    @section('og_image', url(\Illuminate\Support\Facades\Storage::url($product->hero_image)))
+@endif
+
+@section('structured_data')
+    <script type="application/ld+json">
+    {!! json_encode([
+        '@context' => 'https://schema.org',
+        '@type' => 'Product',
+        'name' => $product->name,
+        'sku' => $product->sku,
+        'description' => $product->short_description ?: $product->meta_description,
+        'image' => $product->hero_image ? url(\Illuminate\Support\Facades\Storage::url($product->hero_image)) : null,
+        'brand' => [
+            '@type' => 'Brand',
+            'name' => config('app.name'),
+        ],
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    </script>
+@endsection
 
 @section('content')
     <x-breadcrumbs :items="[
@@ -27,7 +47,7 @@
                     <div class="row g-2">
                         @foreach ($galleryImages as $media)
                             <div class="col-3">
-                                <img src="{{ \Illuminate\Support\Facades\Storage::url($media->path) }}" class="img-fluid rounded" alt="{{ $product->name }}">
+                                <img src="{{ \Illuminate\Support\Facades\Storage::url($media->path) }}" class="img-fluid rounded" alt="{{ $product->name }} — gallery image {{ $loop->iteration }}" loading="lazy">
                             </div>
                         @endforeach
                     </div>

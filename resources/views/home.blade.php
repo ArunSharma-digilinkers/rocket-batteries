@@ -61,7 +61,7 @@
                         <div class="col-sm-6 col-lg-4">
                             <div class="card h-100">
                                 @if ($product->hero_image)
-                                    <img src="{{ \Illuminate\Support\Facades\Storage::url($product->hero_image) }}" class="card-img-top" alt="{{ $product->name }}">
+                                    <img src="{{ \Illuminate\Support\Facades\Storage::url($product->hero_image) }}" class="card-img-top" alt="{{ $product->name }}" loading="lazy">
                                 @endif
                                 <div class="card-body">
                                     <div class="text-muted small">{{ $product->series->category->name }} — {{ $product->series->name }}</div>
@@ -101,7 +101,7 @@
                 <div class="row g-4 align-items-center justify-content-center">
                     @foreach ($clients as $client)
                         <div class="col-4 col-md-2 text-center">
-                            <img src="{{ \Illuminate\Support\Facades\Storage::url($client->logo) }}" alt="{{ $client->name }}" class="img-fluid" style="max-height: 60px;">
+                            <img src="{{ \Illuminate\Support\Facades\Storage::url($client->logo) }}" alt="{{ $client->name }}" class="img-fluid" style="max-height: 60px;" loading="lazy">
                         </div>
                     @endforeach
                 </div>
