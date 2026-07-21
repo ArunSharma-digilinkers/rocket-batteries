@@ -29,7 +29,7 @@ class SeriesSeeder extends Seeder
             [
                 'category_id' => $stationary->id,
                 'name' => 'ES',
-                'description' => 'Standard stationary batteries for UPS and telecom standby power.',
+                'description' => 'Sealed maintenance-free stationary batteries built for telecom, UPS, and industrial backup power.',
                 'sort_order' => 1,
                 'status' => true,
             ]
@@ -40,7 +40,7 @@ class SeriesSeeder extends Seeder
             [
                 'category_id' => $stationary->id,
                 'name' => 'ESC',
-                'description' => 'Compact stationary batteries for space-constrained installations.',
+                'description' => 'High-performance stationary series engineered for demanding backup and standby applications.',
                 'sort_order' => 2,
                 'status' => true,
             ]
@@ -51,7 +51,7 @@ class SeriesSeeder extends Seeder
             [
                 'category_id' => $stationary->id,
                 'name' => 'ESH/TPPL',
-                'description' => 'Thin Plate Pure Lead batteries for high-rate, high-power backup applications.',
+                'description' => 'Thin Plate Pure Lead technology for extended service life and superior high-rate discharge.',
                 'sort_order' => 3,
                 'status' => true,
             ]

@@ -18,6 +18,7 @@ class ContactController extends Controller
                 'facebook' => Setting::get('social_facebook'),
                 'linkedin' => Setting::get('social_linkedin'),
                 'instagram' => Setting::get('social_instagram'),
+                'youtube' => Setting::get('social_youtube'),
                 'mapEmbedUrl' => Setting::get('map_embed_url'),
             ],
         ]);

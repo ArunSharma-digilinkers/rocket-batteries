@@ -6,6 +6,7 @@
 <body>
     <a class="visually-hidden-focusable" href="#main-content">Skip to main content</a>
 
+    @include('layouts.partials.topbar')
     @include('layouts.partials.navbar')
 
     <main id="main-content">

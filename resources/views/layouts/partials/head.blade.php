@@ -9,6 +9,7 @@
 <title>{{ $pageTitle }}</title>
 <meta name="description" content="{{ $pageDescription }}">
 <link rel="canonical" href="{{ url()->current() }}">
+<link rel="icon" type="image/png" href="{{ asset('img/logo.png') }}">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="{{ config('app.name') }}">

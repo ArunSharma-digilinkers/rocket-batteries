@@ -1,57 +1,51 @@
-<nav class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse" id="adminSidebar">
-    <div class="position-sticky pt-3">
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link text-white {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
-                    Dashboard
-                </a>
-            </li>
-        </ul>
+@php
+    $newCount = \App\Models\Enquiry::where('status', 'new')->count();
+    $pendingWarranties = \App\Models\Warranty::where('status', 'pending')->count();
+@endphp
 
-        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-white-50 text-uppercase small">
-            Catalog
-        </h6>
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link text-white {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}" href="{{ route('admin.categories.index') }}">
-                    Categories
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white {{ request()->routeIs('admin.series.*') ? 'active' : '' }}" href="{{ route('admin.series.index') }}">
-                    Series
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white {{ request()->routeIs('admin.attributes.*') ? 'active' : '' }}" href="{{ route('admin.attributes.index') }}">
-                    Attributes
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white {{ request()->routeIs('admin.applications.*') ? 'active' : '' }}" href="{{ route('admin.applications.index') }}">
-                    Applications
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white {{ request()->routeIs('admin.products.*') ? 'active' : '' }}" href="{{ route('admin.products.index') }}">
-                    Products
-                </a>
-            </li>
-        </ul>
-
-        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-white-50 text-uppercase small">
-            Leads
-        </h6>
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link text-white {{ request()->routeIs('admin.enquiries.*') ? 'active' : '' }}" href="{{ route('admin.enquiries.index') }}">
-                    Enquiries
-                    @php $newCount = \App\Models\Enquiry::where('status', 'new')->count(); @endphp
-                    @if ($newCount)
-                        <span class="badge bg-warning text-dark">{{ $newCount }}</span>
-                    @endif
-                </a>
-            </li>
-        </ul>
+<aside class="admin-sidebar" :class="sidebarOpen ? 'is-open' : ''" id="adminSidebar">
+    <div class="admin-sidebar__brand">
+        <a href="{{ route('admin.dashboard') }}">
+            <span class="admin-sidebar__logo"><img src="{{ asset('img/logo.png') }}" alt="{{ config('app.name') }}"></span>
+            <span><strong>Rocket Admin</strong><small>Control centre</small></span>
+        </a>
+        <button type="button" @click="sidebarOpen = false" aria-label="Close navigation"><i class="bi bi-x-lg"></i></button>
     </div>
-</nav>
+
+    <nav class="admin-sidebar__nav" aria-label="Admin navigation">
+        <a class="admin-nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
+            <span><i class="bi bi-grid-1x2-fill"></i></span><strong>Dashboard</strong>
+        </a>
+
+        <div class="admin-nav-group">
+            <span class="admin-nav-group__label">Catalog</span>
+            <a class="admin-nav-link {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}" href="{{ route('admin.categories.index') }}"><span><i class="bi bi-folder-fill"></i></span><strong>Categories</strong></a>
+            <a class="admin-nav-link {{ request()->routeIs('admin.series.*') ? 'active' : '' }}" href="{{ route('admin.series.index') }}"><span><i class="bi bi-collection-fill"></i></span><strong>Series</strong></a>
+            <a class="admin-nav-link {{ request()->routeIs('admin.attributes.*') ? 'active' : '' }}" href="{{ route('admin.attributes.index') }}"><span><i class="bi bi-sliders"></i></span><strong>Attributes</strong></a>
+            <a class="admin-nav-link {{ request()->routeIs('admin.applications.*') ? 'active' : '' }}" href="{{ route('admin.applications.index') }}"><span><i class="bi bi-diagram-3-fill"></i></span><strong>Applications</strong></a>
+            <a class="admin-nav-link {{ request()->routeIs('admin.products.*') ? 'active' : '' }}" href="{{ route('admin.products.index') }}"><span><i class="bi bi-battery-full"></i></span><strong>Products</strong></a>
+        </div>
+
+        <div class="admin-nav-group">
+            <span class="admin-nav-group__label">Content</span>
+            <a class="admin-nav-link {{ request()->routeIs('admin.blog.*') ? 'active' : '' }}" href="{{ route('admin.blog.index') }}"><span><i class="bi bi-journal-richtext"></i></span><strong>Blog</strong></a>
+            <a class="admin-nav-link {{ request()->routeIs('admin.gallery.*') ? 'active' : '' }}" href="{{ route('admin.gallery.index') }}"><span><i class="bi bi-images"></i></span><strong>Gallery</strong></a>
+        </div>
+
+        <div class="admin-nav-group">
+            <span class="admin-nav-group__label">Customer Activity</span>
+            <a class="admin-nav-link {{ request()->routeIs('admin.enquiries.*') ? 'active' : '' }}" href="{{ route('admin.enquiries.index') }}">
+                <span><i class="bi bi-chat-left-text-fill"></i></span><strong>Enquiries</strong>@if ($newCount)<small class="admin-nav-link__count">{{ $newCount }}</small>@endif
+            </a>
+            <a class="admin-nav-link {{ request()->routeIs('admin.warranties.*') ? 'active' : '' }}" href="{{ route('admin.warranties.index') }}">
+                <span><i class="bi bi-shield-check"></i></span><strong>Warranties</strong>@if ($pendingWarranties)<small class="admin-nav-link__count">{{ $pendingWarranties }}</small>@endif
+            </a>
+            <a class="admin-nav-link {{ request()->routeIs('admin.subscribers.*') ? 'active' : '' }}" href="{{ route('admin.subscribers.index') }}"><span><i class="bi bi-people-fill"></i></span><strong>Subscribers</strong></a>
+        </div>
+    </nav>
+
+    <div class="admin-sidebar__help">
+        <span><i class="bi bi-lightning-charge-fill"></i></span>
+        <div><strong>Rocket Batteries</strong><small>Powering progress since 1952</small></div>
+    </div>
+</aside>

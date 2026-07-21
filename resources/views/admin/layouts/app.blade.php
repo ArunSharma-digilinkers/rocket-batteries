@@ -3,25 +3,35 @@
 <head>
     @include('admin.layouts.partials.head')
 </head>
-<body>
-    @include('admin.layouts.partials.topbar')
+<body class="admin-body" x-data="{ sidebarOpen: false }" @keydown.escape.window="sidebarOpen = false">
+    <div class="admin-shell">
+        @include('admin.layouts.partials.sidebar')
 
-    <div class="container-fluid">
-        <div class="row">
-            @include('admin.layouts.partials.sidebar')
+        <button type="button" class="admin-sidebar-backdrop" x-show="sidebarOpen" x-cloak x-transition.opacity @click="sidebarOpen = false" aria-label="Close navigation"></button>
 
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h1 class="h3">@yield('title')</h1>
-                    <div>@yield('actions')</div>
+        <div class="admin-main">
+            @include('admin.layouts.partials.topbar')
+
+            <main class="admin-content">
+                <div class="admin-page-head">
+                    <div>
+                        <span class="admin-page-head__eyebrow">Rocket Batteries · Administration</span>
+                        <h1>@yield('title')</h1>
+                    </div>
+                    <div class="admin-page-head__actions">@yield('actions')</div>
                 </div>
 
                 @if (session('status'))
-                    <div class="alert alert-success">{{ session('status') }}</div>
+                    <div class="alert alert-success admin-alert"><i class="bi bi-check-circle-fill"></i><span>{{ session('status') }}</span></div>
                 @endif
 
                 @yield('content')
             </main>
+
+            <footer class="admin-footer">
+                <span>&copy; {{ now()->year }} {{ config('app.name') }}</span>
+                <span>Administration panel</span>
+            </footer>
         </div>
     </div>
 

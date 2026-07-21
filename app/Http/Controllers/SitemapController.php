@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\BlogPost;
 use App\Models\Product;
 use App\Models\Series;
 use Illuminate\Http\Response;
@@ -15,8 +16,12 @@ class SitemapController extends Controller
         $urls = Cache::remember('sitemap.urls', 3600, function () {
             $urls = collect([
                 ['loc' => route('home'), 'priority' => '1.0'],
+                ['loc' => route('about'), 'priority' => '0.6'],
                 ['loc' => route('products.index'), 'priority' => '0.9'],
+                ['loc' => route('gallery'), 'priority' => '0.6'],
+                ['loc' => route('blog.index'), 'priority' => '0.7'],
                 ['loc' => route('contact'), 'priority' => '0.5'],
+                ['loc' => route('warranty'), 'priority' => '0.5'],
             ]);
 
             Category::where('status', true)->get()->each(function (Category $category) use ($urls) {
@@ -32,6 +37,14 @@ class SitemapController extends Controller
                     'loc' => route('products.show', $product),
                     'priority' => '0.8',
                     'lastmod' => $product->updated_at->toAtomString(),
+                ]);
+            });
+
+            BlogPost::published()->get()->each(function (BlogPost $post) use ($urls) {
+                $urls->push([
+                    'loc' => route('blog.show', $post),
+                    'priority' => '0.7',
+                    'lastmod' => $post->updated_at->toAtomString(),
                 ]);
             });
 

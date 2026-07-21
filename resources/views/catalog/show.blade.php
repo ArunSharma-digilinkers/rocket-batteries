@@ -15,105 +15,168 @@
         'sku' => $product->sku,
         'description' => $product->short_description ?: $product->meta_description,
         'image' => $product->hero_image ? url(\Illuminate\Support\Facades\Storage::url($product->hero_image)) : null,
-        'brand' => [
-            '@type' => 'Brand',
-            'name' => config('app.name'),
-        ],
+        'brand' => ['@type' => 'Brand', 'name' => config('app.name')],
     ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
     </script>
 @endsection
 
 @section('content')
-    <x-breadcrumbs :items="[
-        'Catalog' => route('products.index'),
-        $product->series->category->name => route('categories.show', $product->series->category),
-        $product->series->name => route('series.show', $product->series),
-        $product->name => null,
-    ]" />
-
     @php
         $specValues = $product->attributeValues->keyBy('attribute_id');
-        $galleryImages = $product->media->where('type', 'image');
+        $productImages = collect();
+
+        if ($product->hero_image) {
+            $productImages->push(['url' => \Illuminate\Support\Facades\Storage::url($product->hero_image), 'alt' => $product->name]);
+        }
+
+        foreach ($product->media->where('type', 'image') as $media) {
+            $productImages->push(['url' => $media->url(), 'alt' => $product->name . ' product image']);
+        }
+
+        $productImages = $productImages->unique('url')->values();
+        $availableSpecs = $product->series->attributes
+            ->map(fn ($attribute) => ['attribute' => $attribute, 'value' => $specValues->get($attribute->id)])
+            ->filter(fn ($spec) => filled($spec['value']?->value));
+        $specGroups = $availableSpecs->groupBy(fn ($spec) => $spec['attribute']->group ?: 'Technical specifications');
     @endphp
 
-    <div class="container pb-5">
-        <div class="row g-5">
-            <div class="col-lg-6">
-                @if ($product->hero_image)
-                    <img src="{{ \Illuminate\Support\Facades\Storage::url($product->hero_image) }}" class="img-fluid rounded mb-3" alt="{{ $product->name }}">
-                @endif
+    <section class="product-detail-hero">
+        <div class="product-detail-hero__ambient" aria-hidden="true"></div>
+        <div class="container">
+            <nav class="product-detail-breadcrumb" aria-label="Breadcrumb">
+                <a href="{{ route('home') }}"><i class="bi bi-house-door-fill"></i> Home</a><i class="bi bi-chevron-right"></i>
+                <a href="{{ route('products.index') }}">Products</a><i class="bi bi-chevron-right"></i>
+                <a href="{{ route('series.show', $product->series) }}">{{ $product->series->name }} Series</a><i class="bi bi-chevron-right"></i>
+                <span>{{ $product->name }}</span>
+            </nav>
 
-                @if ($galleryImages->isNotEmpty())
-                    <div class="row g-2">
-                        @foreach ($galleryImages as $media)
-                            <div class="col-3">
-                                <img src="{{ \Illuminate\Support\Facades\Storage::url($media->path) }}" class="img-fluid rounded" alt="{{ $product->name }} — gallery image {{ $loop->iteration }}" loading="lazy">
+            <div class="row g-4 g-xl-5 align-items-center">
+                <div class="col-lg-6">
+                    <div class="product-visual" x-data="{ active: @js($productImages->first()), zoomOpen: false }" @keydown.escape.window="zoomOpen = false">
+                        <div class="product-visual__stage">
+                            <span class="product-visual__series">{{ $product->series->name }} Series</span>
+                            @if ($productImages->isNotEmpty())
+                                <button type="button" class="product-visual__zoom" @click="zoomOpen = true" aria-label="Enlarge product image"><i class="bi bi-arrows-fullscreen"></i></button>
+                                <img :src="active.url" :alt="active.alt" class="product-visual__image">
+                            @else
+                                <div class="product-visual__placeholder"><i class="bi bi-battery-full"></i><span>Product image coming soon</span></div>
+                            @endif
+                            <span class="product-visual__quality"><i class="bi bi-patch-check-fill"></i> Quality assured</span>
+                        </div>
+
+                        @if ($productImages->count() > 1)
+                            <div class="product-visual__thumbs" aria-label="Product images">
+                                @foreach ($productImages as $image)
+                                    <button type="button" @click="active = @js($image)" :class="active.url === @js($image['url']) ? 'active' : ''" aria-label="View product image {{ $loop->iteration }}">
+                                        <img src="{{ $image['url'] }}" alt="" loading="lazy">
+                                    </button>
+                                @endforeach
                             </div>
-                        @endforeach
+                        @endif
+
+                        @if ($productImages->isNotEmpty())
+                            <div class="product-image-modal" x-show="zoomOpen" x-cloak x-transition.opacity @click.self="zoomOpen = false" role="dialog" aria-modal="true" aria-label="Product image preview">
+                                <button type="button" @click="zoomOpen = false" aria-label="Close image preview"><i class="bi bi-x-lg"></i></button>
+                                <img :src="active.url" :alt="active.alt">
+                            </div>
+                        @endif
                     </div>
-                @endif
-            </div>
+                </div>
 
-            <div class="col-lg-6">
-                <div class="text-muted small">{{ $product->series->category->name }} — {{ $product->series->name }}</div>
-                <h1 class="fw-bold">{{ $product->name }}</h1>
-                <p class="text-muted">SKU: <code>{{ $product->sku }}</code>@if ($product->nominal_voltage) &middot; {{ $product->nominal_voltage }} @endif</p>
+                <div class="col-lg-6">
+                    <div class="product-summary">
+                        <span class="product-summary__eyebrow"><i></i>{{ $product->series->category->name }} · {{ $product->series->name }} Series</span>
+                        <h1>{{ $product->name }}</h1>
+                        <div class="product-summary__meta">
+                            <span><small>Product code</small><strong>{{ $product->sku }}</strong></span>
+                            @if ($product->nominal_voltage)<span><small>Nominal voltage</small><strong>{{ $product->nominal_voltage }}</strong></span>@endif
+                            <span class="product-summary__available"><i></i> Available for enquiry</span>
+                        </div>
 
-                @if ($product->short_description)
-                    <p class="lead">{{ $product->short_description }}</p>
-                @endif
+                        @if ($product->short_description)<p class="product-summary__lead">{{ $product->short_description }}</p>@endif
 
-                @if ($product->applications->isNotEmpty())
-                    <div class="mb-3">
-                        @foreach ($product->applications as $application)
-                            <span class="badge bg-secondary">{{ $application->name }}</span>
-                        @endforeach
-                    </div>
-                @endif
+                        @if ($product->applications->isNotEmpty())
+                            <div class="product-summary__applications">
+                                <small>Recommended applications</small>
+                                <div>@foreach ($product->applications as $application)<span><i class="bi bi-check2"></i>{{ $application->name }}</span>@endforeach</div>
+                            </div>
+                        @endif
 
-                @if ($product->datasheet_path)
-                    <a href="{{ \Illuminate\Support\Facades\Storage::url($product->datasheet_path) }}" target="_blank" class="btn btn-outline-primary mb-4">
-                        Download Datasheet (PDF)
-                    </a>
-                @endif
+                        @if ($availableSpecs->isNotEmpty())
+                            <div class="product-summary__quick-specs">
+                                @foreach ($availableSpecs->take(3) as $spec)
+                                    <div><span><i class="bi bi-speedometer2"></i></span><small>{{ $spec['attribute']->name }}</small><strong>{{ $spec['value']->value }}{{ $spec['attribute']->unit ? ' ' . $spec['attribute']->unit : '' }}</strong></div>
+                                @endforeach
+                            </div>
+                        @endif
 
-                <div class="card">
-                    <div class="card-header">Request a Quote</div>
-                    <div class="card-body">
-                        <livewire:catalog.request-quote-form :product-id="$product->id" :key="'quote-'.$product->id" />
+                        <div class="product-summary__actions">
+                            <a href="#request-quote" class="btn btn-accent">Request a Quote <i class="bi bi-arrow-right"></i></a>
+                            @if ($product->datasheet_path)
+                                <a href="{{ \Illuminate\Support\Facades\Storage::url($product->datasheet_path) }}" target="_blank" class="product-summary__datasheet"><i class="bi bi-file-earmark-pdf-fill"></i><span><strong>Download datasheet</strong><small>Technical PDF</small></span></a>
+                            @endif
+                        </div>
+
+                        <div class="product-summary__trust"><span><i class="bi bi-shield-check"></i> Reliable performance</span><span><i class="bi bi-headset"></i> Expert support</span><span><i class="bi bi-truck"></i> Pan-India supply</span></div>
                     </div>
                 </div>
             </div>
         </div>
+    </section>
 
-        @if ($product->series->attributes->isNotEmpty())
-            <div class="row mt-5">
-                <div class="col-lg-8">
-                    <h2 class="h4 fw-bold mb-3">Specifications</h2>
-                    <table class="table table-striped">
-                        <tbody>
-                            @foreach ($product->series->attributes as $attribute)
-                                @php $value = $specValues->get($attribute->id); @endphp
-                                @if ($value)
-                                    <tr>
-                                        <th class="w-50">{{ $attribute->name }} @if ($attribute->unit)<span class="text-muted small">({{ $attribute->unit }})</span>@endif</th>
-                                        <td>{{ $value->value }}</td>
-                                    </tr>
-                                @endif
+    <section class="product-information">
+        <div class="container">
+            <div class="row g-4 g-xl-5 align-items-start">
+                <div class="col-lg-7 col-xl-8">
+                    @if ($product->long_description)
+                        <div class="product-information__intro"><span class="section-kicker">Product overview</span><h2>Engineered for dependable power.</h2></div>
+                        <div class="product-description">{!! nl2br(e($product->long_description)) !!}</div>
+                    @endif
+
+                    @if ($availableSpecs->isNotEmpty())
+                        <div class="product-specifications">
+                            <div class="product-specifications__head"><div><span class="section-kicker">Technical data</span><h2>Product specifications</h2></div><span><i class="bi bi-info-circle"></i> Values may vary by configuration</span></div>
+                            @foreach ($specGroups as $group => $specs)
+                                <div class="product-spec-group">
+                                    <h3><span><i class="bi bi-sliders"></i></span>{{ $group }}</h3>
+                                    <dl>
+                                        @foreach ($specs as $spec)
+                                            <div><dt>{{ $spec['attribute']->name }}</dt><dd>{{ $spec['value']->value }}@if ($spec['attribute']->unit)<small>{{ $spec['attribute']->unit }}</small>@endif</dd></div>
+                                        @endforeach
+                                    </dl>
+                                </div>
                             @endforeach
-                        </tbody>
-                    </table>
+                        </div>
+                    @endif
                 </div>
-            </div>
-        @endif
 
-        @if ($product->long_description)
-            <div class="row mt-4">
-                <div class="col-lg-8">
-                    <h2 class="h4 fw-bold mb-3">Description</h2>
-                    <div>{{ $product->long_description }}</div>
+                <div class="col-lg-5 col-xl-4" id="request-quote">
+                    <aside class="product-quote-card">
+                        <div class="product-quote-card__head"><span><i class="bi bi-chat-square-text-fill"></i></span><div><small>Talk to our battery experts</small><h2>Request a quote</h2></div></div>
+                        <p>Share your requirement and our team will respond with the right product and commercial details.</p>
+                        <livewire:catalog.request-quote-form :product-id="$product->id" :key="'quote-'.$product->id" />
+                        <div class="product-quote-card__foot"><span><i class="bi bi-lock-fill"></i> Your details stay private</span><span><i class="bi bi-clock-fill"></i> Quick response</span></div>
+                    </aside>
                 </div>
             </div>
-        @endif
-    </div>
+        </div>
+    </section>
+
+    @if ($relatedProducts->isNotEmpty())
+        <section class="product-related">
+            <div class="container">
+                <div class="product-related__head"><div><span class="section-kicker">More in this range</span><h2>{{ $product->series->name }} Series products</h2></div><a href="{{ route('series.show', $product->series) }}">View entire series <i class="bi bi-arrow-right"></i></a></div>
+                <div class="row g-4">
+                    @foreach ($relatedProducts as $related)
+                        <div class="col-md-4">
+                            <a href="{{ route('products.show', $related) }}" class="related-product-card">
+                                <div>@if ($related->hero_image)<img src="{{ \Illuminate\Support\Facades\Storage::url($related->hero_image) }}" alt="{{ $related->name }}" loading="lazy">@else<i class="bi bi-battery-full"></i>@endif</div>
+                                <span><small>{{ $related->sku }}</small><strong>{{ $related->name }}</strong>@if ($related->nominal_voltage)<em>{{ $related->nominal_voltage }}</em>@endif</span><i class="bi bi-arrow-up-right"></i>
+                            </a>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
 @endsection

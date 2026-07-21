@@ -125,105 +125,181 @@ new class extends Component
             return $attribute;
         })->filter(fn ($attribute) => $attribute->availableValues->isNotEmpty());
     }
+
+    #[Computed]
+    public function activeFilterCount(): int
+    {
+        return ($this->search !== '' ? 1 : 0)
+            + count($this->series)
+            + count($this->applications)
+            + count($this->voltages)
+            + collect($this->specs)->sum(fn ($values) => count((array) $values));
+    }
 };
 ?>
 
-<div>
-    <div class="row">
-        <div class="col-lg-3 mb-4">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    Filters
-                    <button type="button" class="btn btn-sm btn-link p-0" wire:click="resetFilters">Reset</button>
+<div class="catalog-live" x-data="{ filtersOpen: false }">
+    <div class="catalog-toolbar">
+        <div class="catalog-search">
+            <i class="bi bi-search"></i>
+            <input type="search" wire:model.live.debounce.400ms="search" placeholder="Search by product name or SKU" aria-label="Search products">
+            <span wire:loading wire:target="search" class="catalog-search__loading"><span class="spinner-border spinner-border-sm"></span></span>
+        </div>
+        <button type="button" class="catalog-filter-toggle" @click="filtersOpen = !filtersOpen" :aria-expanded="filtersOpen.toString()">
+            <i class="bi bi-sliders2"></i> Filters
+            @if ($this->activeFilterCount)
+                <span>{{ $this->activeFilterCount }}</span>
+            @endif
+        </button>
+        <div class="catalog-toolbar__result">
+            <strong>{{ $this->products->total() }}</strong>
+            <span>{{ Str::plural('product', $this->products->total()) }} found</span>
+        </div>
+    </div>
+
+    <div class="catalog-layout">
+        <aside class="catalog-filters" :class="filtersOpen ? 'is-open' : ''">
+            <div class="catalog-filters__head">
+                <div><span>Refine results</span><strong>Product filters</strong></div>
+                @if ($this->activeFilterCount)
+                    <button type="button" wire:click="resetFilters">Clear all</button>
+                @endif
+            </div>
+
+            <div class="catalog-filter-group">
+                <div class="catalog-filter-group__title">
+                    <span><i class="bi bi-collection-fill"></i> Battery series</span>
+                    <small>{{ $this->seriesOptions->count() }}</small>
                 </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label">Search</label>
-                        <input type="text" class="form-control" wire:model.live.debounce.400ms="search" placeholder="Name or SKU">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Series</label>
-                        @foreach ($this->seriesOptions as $option)
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" value="{{ $option->id }}" wire:model.live="series">
-                                <label class="form-check-label">{{ $option->category->name }} — {{ $option->name }}</label>
-                            </div>
-                        @endforeach
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Application</label>
-                        @foreach ($this->applicationOptions as $option)
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" value="{{ $option->id }}" wire:model.live="applications">
-                                <label class="form-check-label">{{ $option->name }}</label>
-                            </div>
-                        @endforeach
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Nominal Voltage</label>
-                        @foreach ($this->voltageOptions as $option)
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" value="{{ $option }}" wire:model.live="voltages">
-                                <label class="form-check-label">{{ $option }}</label>
-                            </div>
-                        @endforeach
-                    </div>
-
-                    @foreach ($this->specFilterAttributes as $attribute)
-                        <div class="mb-3">
-                            <label class="form-label">{{ $attribute->name }} @if ($attribute->unit)<span class="text-muted small">({{ $attribute->unit }})</span>@endif</label>
-                            @foreach ($attribute->availableValues as $value)
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" value="{{ $value }}" wire:model.live="specs.{{ $attribute->id }}">
-                                    <label class="form-check-label">{{ $value }}</label>
-                                </div>
-                            @endforeach
-                        </div>
+                <div class="catalog-filter-group__options">
+                    @foreach ($this->seriesOptions as $option)
+                        <label class="catalog-check" for="series-{{ $option->id }}">
+                            <input id="series-{{ $option->id }}" type="checkbox" value="{{ $option->id }}" wire:model.live="series">
+                            <span class="catalog-check__box"><i class="bi bi-check"></i></span>
+                            <span><strong>{{ $option->name }}</strong><small>{{ $option->category->name }}</small></span>
+                        </label>
                     @endforeach
                 </div>
             </div>
-        </div>
 
-        <div class="col-lg-9">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div class="text-muted small">{{ $this->products->total() }} products found</div>
+            <div class="catalog-filter-group">
+                <div class="catalog-filter-group__title">
+                    <span><i class="bi bi-grid-fill"></i> Application</span>
+                    <small>{{ $this->applicationOptions->count() }}</small>
+                </div>
+                <div class="catalog-filter-group__options catalog-filter-group__options--compact">
+                    @foreach ($this->applicationOptions as $option)
+                        <label class="catalog-check" for="application-{{ $option->id }}">
+                            <input id="application-{{ $option->id }}" type="checkbox" value="{{ $option->id }}" wire:model.live="applications">
+                            <span class="catalog-check__box"><i class="bi bi-check"></i></span>
+                            <span><strong>{{ $option->name }}</strong></span>
+                        </label>
+                    @endforeach
+                </div>
             </div>
 
-            <div class="row g-4" wire:loading.class="opacity-50">
-                @forelse ($this->products as $product)
-                    <div class="col-sm-6 col-lg-4">
-                        <div class="card h-100">
-                            @if ($product->hero_image)
-                                <img src="{{ \Illuminate\Support\Facades\Storage::url($product->hero_image) }}" class="card-img-top" alt="{{ $product->name }}" loading="lazy">
-                            @endif
-                            <div class="card-body d-flex flex-column">
-                                <div class="text-muted small">{{ $product->series->category->name }} — {{ $product->series->name }}</div>
-                                <h3 class="h5 card-title">{{ $product->name }}</h3>
-                                <p class="card-text text-muted small flex-grow-1">{{ $product->short_description }}</p>
-                                @if ($product->applications->isNotEmpty())
-                                    <div class="mb-2">
-                                        @foreach ($product->applications as $application)
-                                            <span class="badge bg-secondary">{{ $application->name }}</span>
-                                        @endforeach
-                                    </div>
-                                @endif
-                                <a href="{{ route('products.show', $product) }}" class="btn btn-sm btn-outline-primary mt-auto">View Details</a>
-                            </div>
-                        </div>
+            @if ($this->voltageOptions->isNotEmpty())
+                <div class="catalog-filter-group">
+                    <div class="catalog-filter-group__title">
+                        <span><i class="bi bi-lightning-charge-fill"></i> Nominal voltage</span>
+                        <small>{{ $this->voltageOptions->count() }}</small>
                     </div>
+                    <div class="catalog-filter-pills">
+                        @foreach ($this->voltageOptions as $option)
+                            @php $voltageId = 'voltage-'.md5((string) $option); @endphp
+                            <label for="{{ $voltageId }}">
+                                <input id="{{ $voltageId }}" type="checkbox" value="{{ $option }}" wire:model.live="voltages">
+                                <span>{{ $option }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            @foreach ($this->specFilterAttributes as $attribute)
+                <div class="catalog-filter-group">
+                    <div class="catalog-filter-group__title">
+                        <span><i class="bi bi-toggles"></i> {{ $attribute->name }}</span>
+                        @if ($attribute->unit)<small>{{ $attribute->unit }}</small>@endif
+                    </div>
+                    <div class="catalog-filter-pills">
+                        @foreach ($attribute->availableValues as $value)
+                            @php $specId = 'spec-'.$attribute->id.'-'.md5((string) $value); @endphp
+                            <label for="{{ $specId }}">
+                                <input id="{{ $specId }}" type="checkbox" value="{{ $value }}" wire:model.live="specs.{{ $attribute->id }}">
+                                <span>{{ $value }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+            @endforeach
+
+            <div class="catalog-filters__help">
+                <span><i class="bi bi-headset"></i></span>
+                <div><strong>Not sure what fits?</strong><small>Our team can help match your requirements.</small><a href="{{ route('contact') }}">Ask an expert <i class="bi bi-arrow-right"></i></a></div>
+            </div>
+        </aside>
+
+        <main class="catalog-results">
+            @if ($this->activeFilterCount)
+                <div class="catalog-active-filters">
+                    <span><i class="bi bi-funnel-fill"></i> {{ $this->activeFilterCount }} active {{ Str::plural('filter', $this->activeFilterCount) }}</span>
+                    <button type="button" wire:click="resetFilters">Reset filters</button>
+                </div>
+            @endif
+
+            <div class="catalog-product-grid" wire:loading.class="is-loading">
+                @php
+                    $fallbackImages = ['img/ev-3200.png', 'img/ev-4400.png', 'img/ev-5200.png', 'img/ev-7000.png'];
+                @endphp
+                @forelse ($this->products as $product)
+                    <article class="catalog-product-card">
+                        <a href="{{ route('products.show', $product) }}" class="catalog-product-card__visual" aria-label="View {{ $product->name }} details">
+                            <span class="catalog-product-card__series">{{ $product->series->name }}</span>
+                            <span class="catalog-product-card__grid" aria-hidden="true"></span>
+                            <img
+                                src="{{ $product->hero_image ? \Illuminate\Support\Facades\Storage::url($product->hero_image) : asset($fallbackImages[$loop->index % count($fallbackImages)]) }}"
+                                alt="{{ $product->name }}"
+                                loading="lazy"
+                            >
+                            <span class="catalog-product-card__view"><i class="bi bi-arrow-up-right"></i></span>
+                        </a>
+                        <div class="catalog-product-card__body">
+                            <div class="catalog-product-card__meta">
+                                <span>{{ $product->series->category->name }}</span>
+                                @if ($product->nominal_voltage)<span><i class="bi bi-lightning-charge-fill"></i> {{ $product->nominal_voltage }}</span>@endif
+                            </div>
+                            <h3><a href="{{ route('products.show', $product) }}">{{ $product->name }}</a></h3>
+                            <span class="catalog-product-card__sku">SKU · {{ $product->sku }}</span>
+                            <p>{{ $product->short_description ?: 'Dependable Rocket battery performance engineered for demanding applications.' }}</p>
+                            @if ($product->applications->isNotEmpty())
+                                <div class="catalog-product-card__applications">
+                                    @foreach ($product->applications->take(3) as $application)
+                                        <span>{{ $application->name }}</span>
+                                    @endforeach
+                                    @if ($product->applications->count() > 3)
+                                        <span>+{{ $product->applications->count() - 3 }}</span>
+                                    @endif
+                                </div>
+                            @endif
+                            <a href="{{ route('products.show', $product) }}" class="catalog-product-card__link">View specifications <i class="bi bi-arrow-right"></i></a>
+                        </div>
+                    </article>
                 @empty
-                    <div class="col-12">
-                        <p class="text-muted text-center py-5">No products match your filters.</p>
+                    <div class="catalog-empty">
+                        <span><i class="bi bi-search"></i></span>
+                        <h3>No matching products found.</h3>
+                        <p>Try a broader search or clear some filters to explore more of the Rocket range.</p>
+                        <button type="button" class="btn btn-accent" wire:click="resetFilters">Clear all filters</button>
                     </div>
                 @endforelse
             </div>
 
-            <div class="mt-4">
-                {{ $this->products->links() }}
-            </div>
-        </div>
+            @if ($this->products->hasPages())
+                <div class="catalog-pagination">
+                    {{ $this->products->links() }}
+                </div>
+            @endif
+        </main>
     </div>
 </div>
